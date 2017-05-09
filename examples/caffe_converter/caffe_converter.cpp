@@ -31,14 +31,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <memory>
 #define NO_STRICT
 #define CNN_USE_CAFFE_CONVERTER
-#define DNN_USE_IMAGE_API
+#include "tiny_dnn/models/archive.h"
 #include "tiny_dnn/tiny_dnn.h"
 
 using namespace tiny_dnn;
 using namespace tiny_dnn::activation;
 using namespace std;
 
-image<float> compute_mean(const string &mean_file, int width, int height) {
+image<float> compute_mean(const string& mean_file, int width, int height) {
   caffe::BlobProto blob;
   detail::read_proto_from_binary(mean_file, &blob);
 
@@ -49,24 +49,7 @@ image<float> compute_mean(const string &mean_file, int width, int height) {
   return mean_image(original);
 }
 
-void preprocess(const image<float> &img,
-                const image<float> &mean,
-                int width,
-                int height,
-                vec_t *dst) {
-  image<float> resized = resize_image(img, width, height);
-
-  image<> resized_uint8(resized);
-
-  if (!mean.empty()) {
-    image<float> normalized = subtract_scalar(resized, mean);
-    *dst                    = normalized.to_vec();
-  } else {
-    *dst = resized.to_vec();
-  }
-}
-
-vector<string> get_label_list(const string &label_file) {
+vector<string> get_label_list(const string& label_file) {
   string line;
   ifstream ifs(label_file.c_str());
 
@@ -79,8 +62,8 @@ vector<string> get_label_list(const string &label_file) {
   return lines;
 }
 
-void load_validation_data(const string &validation_file,
-                          vector<pair<string, int>> *validation) {
+void load_validation_data(const string& validation_file,
+                          vector<pair<string, int>>* validation) {
   string line;
   ifstream ifs(validation_file.c_str());
 
@@ -94,64 +77,67 @@ void load_validation_data(const string &validation_file,
   }
 }
 
-void test(const string &model_file,
-          const string &trained_file,
-          const string &mean_file,
-          const string &label_file,
-          const string &img_file) {
-  auto labels = get_label_list(label_file);
-  auto net    = create_net_from_caffe_prototxt(model_file);
-  reload_weight_from_caffe_protobinary(trained_file, net.get());
-
-  // int channels = (*net)[0]->in_data_shape()[0].depth_;
-  int width  = (*net)[0]->in_data_shape()[0].width_;
-  int height = (*net)[0]->in_data_shape()[0].height_;
-
+void test(models::archive& archive, const std::string image_file) {
   std::vector<std::pair<std::string, int>> validation(1);
-  load_validation_data(img_file, &validation);
-
-  auto mean = compute_mean(mean_file, width, height);
+  load_validation_data(image_file, &validation);
 
   for (size_t i = 0; i < validation.size(); ++i) {
-    image<float> img(img_file, image_type::bgr);
+    image<float> img(image_file, image_type::bgr);
+    auto predictions(archive.predict(img));
 
-    vec_t vec;
-
-    preprocess(img, mean, width, height, &vec);
-
-    clock_t begin = clock();
-
-    auto result = net->predict(vec);
-
-    clock_t end         = clock();
-    double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
-    cout << "Elapsed time(s): " << elapsed_secs << endl;
-
-    vector<tiny_dnn::float_t> sorted(result.begin(), result.end());
-
-    int top_n = 5;
-    partial_sort(sorted.begin(), sorted.begin() + top_n, sorted.end(),
-                 greater<tiny_dnn::float_t>());
-
-    for (int i = 0; i < top_n; i++) {
-      size_t idx =
-        distance(result.begin(), find(result.begin(), result.end(), sorted[i]));
-      cout << labels[idx] << "," << sorted[i] << endl;
+    for (auto prediction : predictions) {
+      cout << prediction.label << "," << prediction.confidence << endl;
     }
   }
 }
 
-int main(int argc, char **argv) {
-  int arg_channel     = 1;
-  string model_file   = argv[arg_channel++];
-  string trained_file = argv[arg_channel++];
-  string mean_file    = argv[arg_channel++];
-  string label_file   = argv[arg_channel++];
-  string img_file     = argv[arg_channel++];
+models::archive create_archive_from(const string& model_file,
+                                    const string& trained_file,
+                                    const string& mean_file,
+                                    const string& label_file) {
+  auto labels = get_label_list(label_file);
+  auto net    = create_net_from_caffe_prototxt(model_file);
+  reload_weight_from_caffe_protobinary(trained_file, net.get());
 
-  try {
-    test(model_file, trained_file, mean_file, label_file, img_file);
-  } catch (const nn_error &e) {
-    cout << e.what() << endl;
+  auto mean = compute_mean(mean_file, (*net)[0]->in_data_shape()[0].width_,
+                           (*net)[0]->in_data_shape()[0].height_);
+
+  return models::archive(*net, mean, labels);
+}
+
+int main(int argc, char** argv) {
+  int arg_channel = 1;
+
+  string mode      = argv[arg_channel++];
+  string mode_file = argv[arg_channel++];
+
+  if (mode.compare("archive") == 0 || mode.compare("test") == 0) {
+    string model_file   = argv[arg_channel++];
+    string trained_file = argv[arg_channel++];
+    string mean_file    = argv[arg_channel++];
+    string label_file   = argv[arg_channel++];
+
+    try {
+      auto archive(
+        create_archive_from(model_file, trained_file, mean_file, label_file));
+      if (mode.compare("archive") == 0) {
+        std::cout << "saving converted caffe network to " << mode_file << " ..."
+                  << std::endl;
+        archive.save(mode_file);
+        std::cout << "finished" << std::endl;
+      } else {
+        test(archive, mode_file);
+      }
+    } catch (const nn_error& e) {
+      cout << e.what() << endl;
+    }
+  } else if (mode.compare("archive-test") == 0) {
+    string test_file = argv[arg_channel++];
+    std::cout << "loading archive from " << mode_file << " ..." << std::endl;
+    models::archive archive(mode_file);
+    std::cout << "running inference on " << test_file << std::endl;
+    test(archive, test_file);
+  } else {
+    cout << "unsupported mode " << mode << std::endl;
   }
 }
