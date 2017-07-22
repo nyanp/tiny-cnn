@@ -144,19 +144,19 @@ TEST(core, device_add_op) {
     // max_pooling_layer l(4, 4, 1, 2, 2,
     // core::backend_t::opencl);
 
-    ASSERT_EQ(ProgramManager::getInstance().num_programs(), 0);
+    ASSERT_EQ(ProgramManager::getInstance().num_programs(), 0u);
 
 #if defined(USE_OPENCL) || defined(USE_CUDA)
     // first time op registration: OK
     my_gpu_device.registerOp(l);
 
-    ASSERT_EQ(ProgramManager::getInstance().num_programs(), 1);
+    ASSERT_EQ(ProgramManager::getInstance().num_programs(), 1u);
 
     // second time op registraion: we expect that Op it's not
     // registrated since it's already there.
     my_gpu_device.registerOp(l);
 
-    ASSERT_EQ(ProgramManager::getInstance().num_programs(), 1);
+    ASSERT_EQ(ProgramManager::getInstance().num_programs(), 1u);
 #endif
   }
 }
@@ -192,7 +192,7 @@ TEST(core, ocl_conv) {
     // short-hand references to the payload vectors
     vec_t &in = in_tensor[0], &out = out_tensor[0], &weight = weight_tensor[0];
 
-    ASSERT_EQ(l.in_shape()[1].size(), 18);  // weight
+    ASSERT_EQ(l.in_shape()[1].size(), 18u);  // weight
 
     uniform_rand(in.begin(), in.end(), -1.0, 1.0);
 

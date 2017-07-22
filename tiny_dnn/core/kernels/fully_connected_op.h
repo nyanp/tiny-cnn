@@ -39,7 +39,7 @@ class FullyConnectedOp : public core::OpKernel {
     if (engine == core::backend_t::internal) {
       kernels::fully_connected_op_internal(
         in_data, W[0], params.has_bias_ ? (*bias)[0] : vec_t(), out_data,
-        params, context.parallelize());
+        params, params.has_bias_, context.parallelize());
     } else if (engine == core::backend_t::nnpack) {
       kernels::fully_connected_op_nnpack(
         in_data, W[0], params.has_bias_ ? (*bias)[0] : vec_t(), out_data,
@@ -47,7 +47,7 @@ class FullyConnectedOp : public core::OpKernel {
     } else if (engine == core::backend_t::avx) {
       kernels::fully_connected_op_avx(in_data, W[0],
                                       params.has_bias_ ? (*bias)[0] : vec_t(),
-                                      out_data, params, context.parallelize());
+                                      out_data, params, params.has_bias_, context.parallelize());
     } else {
       throw nn_error("Not supported engine: " + to_string(engine));
     }

@@ -476,8 +476,20 @@ class layer : public node {
     output(out);
   }
 
+  std::vector<tensor_t> forward(
+      const std::vector<tensor_t> &input) {  // for test
+    std::vector<const tensor_t *> output_tmp;
+    forward(input, output_tmp);
+
+    std::vector<tensor_t> output;
+    for (size_t i = 0; i < output_tmp.size(); ++i) {
+      output.push_back(*(const_cast<tensor_t*>(output_tmp[i])));
+    }
+    return output;
+  }
+
   std::vector<tensor_t> backward(
-    const std::vector<tensor_t> &out_grads) {  // for test
+      const std::vector<tensor_t> &out_grads) {  // for test
     setup(false);
 
     std::vector<std::vector<const vec_t *>> grads2;

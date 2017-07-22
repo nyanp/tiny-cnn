@@ -14,11 +14,21 @@
 namespace tiny_dnn {
 
 /**
+ * struct with configurable optional parameters
+ */
+struct fully_connected_layer_params {
+  // Whether to include additional bias to the layer
+  bool has_bias = true;
+  // The backend type for to use for computation.
+  backend_t backend_type = core::backend_t::internal;
+};
+
+/**
  * compute fully-connected(matmul) operation
  **/
 class fully_connected_layer : public layer {
  public:
-  /**
+ /**
    * @param in_dim [in] number of elements of the input
    * @param out_dim [in] number of elements of the output
    * @param has_bias [in] whether to include additional bias to the layer
@@ -33,10 +43,24 @@ class fully_connected_layer : public layer {
     layer::set_backend_type(backend_type);
   }
 
+  /**
+   * @param in_dim [in] number of elements of the input
+   * @param out_dim [in] number of elements of the output
+   * @param params [in] whether to include additional bias to the layer
+   **/
+  fully_connected_layer(size_t in_dim,
+                        size_t out_dim,
+                        const fully_connected_layer_params &params)
+    : fully_connected_layer(in_dim,
+                            out_dim,
+                            params.has_bias,
+                            params.backend_type) {}
+
   // move constructor
   fully_connected_layer(fully_connected_layer &&other)
     : layer(std::move(other)),
       params_(std::move(other.params_)),
+      layer_params_(std::move(other.layer_params_)),
       kernel_fwd_(std::move(other.kernel_fwd_)),
       kernel_back_(std::move(other.kernel_back_)) {
     init_backend(std::move(other.engine()));
@@ -46,15 +70,17 @@ class fully_connected_layer : public layer {
 
   size_t fan_out_size() const override { return params_.out_size_; }
 
+  fully_connected_layer_params params() const { return layer_params_; }
+
   std::vector<index3d<size_t>> in_shape() const override {
-    if (params_.has_bias_) {
-      return {index3d<size_t>(params_.in_size_, 1, 1),
-              index3d<size_t>(params_.in_size_, params_.out_size_, 1),
-              index3d<size_t>(params_.out_size_, 1, 1)};
-    } else {
-      return {index3d<size_t>(params_.in_size_, 1, 1),
-              index3d<size_t>(params_.in_size_, params_.out_size_, 1)};
+    std::vector<index3d<size_t>> in_shape;
+    in_shape.emplace_back(params_.in_size_, 1, 1);
+    in_shape.emplace_back(params_.in_size_, params_.out_size_, 1);
+
+    if (layer_params_.has_bias) {
+      in_shape.emplace_back(params_.out_size_, 1, 1);
     }
+    return in_shape;
   }
 
   std::vector<index3d<size_t>> out_shape() const override {
@@ -94,11 +120,16 @@ class fully_connected_layer : public layer {
     params_.in_size_  = in_size;
     params_.out_size_ = out_size;
     params_.has_bias_ = has_bias;
+
+    // TODO(edgarriba): refactor later
+    layer_params_.has_bias = has_bias;
   }
 
   void init_backend(backend_t backend_type) {
     core::OpKernelConstruction ctx =
       core::OpKernelConstruction(layer::device(), &params_);
+
+    layer_params_.backend_type = backend_type;
 
     if (backend_type == backend_t::internal || backend_type == backend_t::avx ||
         backend_type == backend_t::nnpack) {
@@ -112,6 +143,7 @@ class fully_connected_layer : public layer {
  private:
   /* The layer parameters */
   fully_params params_;
+  fully_connected_layer_params layer_params_;
 
   /* forward op context */
   OpKernelContext fwd_ctx_;

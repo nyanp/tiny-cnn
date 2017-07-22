@@ -21,8 +21,9 @@ inline void avx_fully_connected_forward_kernel(
   const std::vector<float, Allocator> &bias,
   std::vector<std::vector<float, Allocator>> &out_data,
   const fully_params &params,
+  const bool has_bias,
   const bool layer_parallelize) {
-  if (params.has_bias_) {
+  if (has_bias) {
     size_t nblocks  = params.out_size_ / 8;
     size_t nremains = params.out_size_ & 7;
     if (nremains) {
@@ -109,9 +110,10 @@ inline void avx_fully_connected_forward_kernel(
   const std::vector<double, Allocator> &bias,
   std::vector<std::vector<double, Allocator>> &out_data,
   const fully_params &params,
+  const bool has_bias,
   const bool layer_parallelize) {
   // fallback to tiny-backend when float_t is double
-  fully_connected_op_internal(in_data, W, bias, out_data, params,
+  fully_connected_op_internal(in_data, W, bias, out_data, params, has_bias,
                               layer_parallelize);
 }
 
@@ -124,8 +126,9 @@ inline void avx_fully_connected_back_kernel(
   std::vector<std::vector<float, Allocator>> &curr_delta,
   std::vector<std::vector<float, Allocator>> &prev_delta,
   const fully_params &params,
+  const bool has_bias,
   const bool layer_parallelize) {
-  if (params.has_bias_) {
+  if (has_bias) {
     for (size_t sample = 0; sample < prev_out.size(); sample++) {
       auto &prev_delta2 = prev_delta[sample];
       auto &curr_delta2 = curr_delta[sample];
@@ -186,10 +189,11 @@ inline void avx_fully_connected_back_kernel(
   std::vector<std::vector<double, Allocator>> &curr_delta,
   std::vector<std::vector<double, Allocator>> &prev_delta,
   const fully_params &params,
+  const bool has_bias,
   const bool layer_parallelize) {
   // fallback to tiny-backend when float_t is double
   fully_connected_op_internal(prev_out, W, dW, db, curr_delta, prev_delta,
-                              params, layer_parallelize);
+                              params, has_bias, layer_parallelize);
 }
 
 #endif  // CNN_USE_AVX
@@ -199,10 +203,11 @@ inline void fully_connected_op_avx(const tensor_t &in_data,
                                    const vec_t &bias,
                                    tensor_t &out_data,
                                    const fully_params &params,
+                                   const bool has_bias,
                                    const bool layer_parallelize) {
 #ifdef CNN_USE_AVX
   avx_fully_connected_forward_kernel(in_data, W, bias, out_data, params,
-                                     layer_parallelize);
+                                     has_bias, layer_parallelize);
 #else
   CNN_UNREFERENCED_PARAMETER(in_data);
   CNN_UNREFERENCED_PARAMETER(W);
@@ -210,7 +215,7 @@ inline void fully_connected_op_avx(const tensor_t &in_data,
   CNN_UNREFERENCED_PARAMETER(out_data);
   CNN_UNREFERENCED_PARAMETER(params);
   CNN_UNREFERENCED_PARAMETER(layer_parallelize);
-  throw nn_error("TinyDNN has not been compiled with AVX support.");
+  throw nn_error("tiny-dnn has not been compiled with AVX support.");
 #endif
 }
 
@@ -221,10 +226,11 @@ inline void fully_connected_op_avx(const tensor_t &prev_out,
                                    tensor_t &curr_delta,
                                    tensor_t &prev_delta,
                                    const fully_params &params,
+                                   const bool has_bias,
                                    const bool layer_parallelize) {
 #ifdef CNN_USE_AVX
   avx_fully_connected_back_kernel(prev_out, W, dW, db, curr_delta, prev_delta,
-                                  params, layer_parallelize);
+                                  params, has_bias, layer_parallelize);
 #else
   CNN_UNREFERENCED_PARAMETER(prev_out);
   CNN_UNREFERENCED_PARAMETER(W);
@@ -234,7 +240,7 @@ inline void fully_connected_op_avx(const tensor_t &prev_out,
   CNN_UNREFERENCED_PARAMETER(prev_delta);
   CNN_UNREFERENCED_PARAMETER(params);
   CNN_UNREFERENCED_PARAMETER(layer_parallelize);
-  throw nn_error("TinyDNN has not been compiled with AVX support.");
+  throw nn_error("tiny-dnn has not been compiled with AVX support.");
 #endif
 }
 

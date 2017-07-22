@@ -43,21 +43,21 @@ TEST(image, create_from_array_uint8) {
   {
     image<uint8_t> img(src, 3, 2, image_type::grayscale);
 
-    EXPECT_EQ(3, img.width());
-    EXPECT_EQ(2, img.height());
-    EXPECT_EQ(1, img.depth());
-    EXPECT_EQ((int)image_type::grayscale, (int)img.type());
-    EXPECT_EQ(5, img.at(1, 1));
+    EXPECT_EQ(3u, img.width());
+    EXPECT_EQ(2u, img.height());
+    EXPECT_EQ(1u, img.depth());
+    EXPECT_EQ(int(image_type::grayscale), int(img.type()));
+    EXPECT_EQ(5u, img.at(1, 1));
   }
 
   {
     image<uint8_t> img(src, 1, 2, image_type::rgb);
 
-    EXPECT_EQ(1, img.width());
-    EXPECT_EQ(2, img.height());
-    EXPECT_EQ(3, img.depth());
-    EXPECT_EQ((int)image_type::rgb, (int)img.type());
-    EXPECT_EQ(4, img.at(0, 1, 1));
+    EXPECT_EQ(1u, img.width());
+    EXPECT_EQ(2u, img.height());
+    EXPECT_EQ(3u, img.depth());
+    EXPECT_EQ(int(image_type::rgb), int(img.type()));
+    EXPECT_EQ(4u, img.at(0, 1, 1));
   }
 }
 
@@ -67,20 +67,20 @@ TEST(image, create_from_array_float) {
   {
     image<float> img(src, 3, 2, image_type::grayscale);
 
-    EXPECT_EQ(3, img.width());
-    EXPECT_EQ(2, img.height());
-    EXPECT_EQ(1, img.depth());
-    EXPECT_EQ((int)image_type::grayscale, (int)img.type());
+    EXPECT_EQ(3u, img.width());
+    EXPECT_EQ(2u, img.height());
+    EXPECT_EQ(1u, img.depth());
+    EXPECT_EQ(int(image_type::grayscale), int(img.type()));
     EXPECT_FLOAT_EQ(5.0f, img.at(1, 1));
   }
 
   {
     image<float> img(src, 1, 2, image_type::rgb);
 
-    EXPECT_EQ(1, img.width());
-    EXPECT_EQ(2, img.height());
-    EXPECT_EQ(3, img.depth());
-    EXPECT_EQ((int)image_type::rgb, (int)img.type());
+    EXPECT_EQ(1u, img.width());
+    EXPECT_EQ(2u, img.height());
+    EXPECT_EQ(3u, img.depth());
+    EXPECT_EQ(int(image_type::rgb), int(img.type()));
     EXPECT_FLOAT_EQ(4.0f, img.at(0, 1, 1));
   }
 }
@@ -88,8 +88,8 @@ TEST(image, create_from_array_float) {
 TEST(image, create_zero_filled_uint8) {
   image<uint8_t> img(shape3d(3, 2, 1), image_type::grayscale);
 
-  EXPECT_EQ(0, img.at(0, 0));
-  EXPECT_EQ(0, img.at(2, 1));
+  EXPECT_EQ(0u, img.at(0, 0));
+  EXPECT_EQ(0u, img.at(2, 1));
 }
 
 TEST(image, create_zero_filled_float) {
@@ -115,14 +115,14 @@ TEST(image, read_png_1bit) {
 
   image<uint8_t> img(path, image_type::grayscale);
 
-  EXPECT_EQ(32, img.width());
-  EXPECT_EQ(32, img.height());
-  EXPECT_EQ(1, img.depth());
-  EXPECT_EQ(255, img.at(0, 0));
-  EXPECT_EQ(255, img.at(15, 15));
-  EXPECT_EQ(0, img.at(31, 0));
-  EXPECT_EQ(0, img.at(16, 15));
-  EXPECT_EQ(0, img.at(31, 31));
+  EXPECT_EQ(32u, img.width());
+  EXPECT_EQ(32u, img.height());
+  EXPECT_EQ(1u, img.depth());
+  EXPECT_EQ(255u, img.at(0, 0));
+  EXPECT_EQ(255u, img.at(15, 15));
+  EXPECT_EQ(0u, img.at(31, 0));
+  EXPECT_EQ(0u, img.at(16, 15));
+  EXPECT_EQ(0u, img.at(31, 31));
 }
 
 TEST(image, read_png_2bit) {
@@ -132,13 +132,13 @@ TEST(image, read_png_2bit) {
 
   image<uint8_t> img(path, image_type::grayscale);
 
-  EXPECT_EQ(32, img.width());
-  EXPECT_EQ(32, img.height());
-  EXPECT_EQ(1, img.depth());
-  EXPECT_EQ(0, img.at(0, 0));
-  EXPECT_EQ(85, img.at(4, 0));
-  EXPECT_EQ(170, img.at(8, 0));
-  EXPECT_EQ(255, img.at(12, 0));
+  EXPECT_EQ(32u, img.width());
+  EXPECT_EQ(32u, img.height());
+  EXPECT_EQ(1u, img.depth());
+  EXPECT_EQ(0u, img.at(0, 0));
+  EXPECT_EQ(85u, img.at(4, 0));
+  EXPECT_EQ(170u, img.at(8, 0));
+  EXPECT_EQ(255u, img.at(12, 0));
 }
 
 TEST(image, read_png_4bit) {
@@ -148,13 +148,13 @@ TEST(image, read_png_4bit) {
 
   image<uint8_t> img(path, image_type::grayscale);
 
-  EXPECT_EQ(32, img.width());
-  EXPECT_EQ(32, img.height());
-  EXPECT_EQ(1, img.depth());
-  EXPECT_EQ(0, img.at(0, 0));
-  EXPECT_EQ(17, img.at(4, 0));
-  EXPECT_EQ(34, img.at(8, 0));
-  EXPECT_EQ(51, img.at(12, 0));
+  EXPECT_EQ(32u, img.width());
+  EXPECT_EQ(32u, img.height());
+  EXPECT_EQ(1u, img.depth());
+  EXPECT_EQ(0u, img.at(0, 0));
+  EXPECT_EQ(17u, img.at(4, 0));
+  EXPECT_EQ(34u, img.at(8, 0));
+  EXPECT_EQ(51u, img.at(12, 0));
 }
 
 TEST(image, read_png_8bit) {
@@ -164,13 +164,13 @@ TEST(image, read_png_8bit) {
 
   image<uint8_t> img(path, image_type::grayscale);
 
-  EXPECT_EQ(32, img.width());
-  EXPECT_EQ(32, img.height());
-  EXPECT_EQ(1, img.depth());
-  EXPECT_EQ(0, img.at(0, 0));
-  EXPECT_EQ(32, img.at(0, 1));
-  EXPECT_EQ(64, img.at(0, 2));
-  EXPECT_EQ(96, img.at(0, 3));
+  EXPECT_EQ(32u, img.width());
+  EXPECT_EQ(32u, img.height());
+  EXPECT_EQ(1u, img.depth());
+  EXPECT_EQ(0u, img.at(0, 0));
+  EXPECT_EQ(32u, img.at(0, 1));
+  EXPECT_EQ(64u, img.at(0, 2));
+  EXPECT_EQ(96u, img.at(0, 3));
 }
 
 TEST(image, read_png_8bit_gray2bgr) {
@@ -180,25 +180,25 @@ TEST(image, read_png_8bit_gray2bgr) {
 
   image<uint8_t> img(path, image_type::bgr);
 
-  EXPECT_EQ(32, img.width());
-  EXPECT_EQ(32, img.height());
-  EXPECT_EQ(3, img.depth());
-  EXPECT_EQ(0, img.at(0, 0));
-  EXPECT_EQ(0, img.at(0, 0, 0));
-  EXPECT_EQ(0, img.at(0, 0, 1));
-  EXPECT_EQ(0, img.at(0, 0, 2));
-  EXPECT_EQ(32, img.at(0, 1));
-  EXPECT_EQ(32, img.at(0, 1, 0));
-  EXPECT_EQ(32, img.at(0, 1, 1));
-  EXPECT_EQ(32, img.at(0, 1, 2));
-  EXPECT_EQ(64, img.at(0, 2));
-  EXPECT_EQ(64, img.at(0, 2, 0));
-  EXPECT_EQ(64, img.at(0, 2, 1));
-  EXPECT_EQ(64, img.at(0, 2, 2));
-  EXPECT_EQ(96, img.at(0, 3));
-  EXPECT_EQ(96, img.at(0, 3, 0));
-  EXPECT_EQ(96, img.at(0, 3, 1));
-  EXPECT_EQ(96, img.at(0, 3, 2));
+  EXPECT_EQ(32u, img.width());
+  EXPECT_EQ(32u, img.height());
+  EXPECT_EQ(3u, img.depth());
+  EXPECT_EQ(0u, img.at(0, 0));
+  EXPECT_EQ(0u, img.at(0, 0, 0));
+  EXPECT_EQ(0u, img.at(0, 0, 1));
+  EXPECT_EQ(0u, img.at(0, 0, 2));
+  EXPECT_EQ(32u, img.at(0, 1));
+  EXPECT_EQ(32u, img.at(0, 1, 0));
+  EXPECT_EQ(32u, img.at(0, 1, 1));
+  EXPECT_EQ(32u, img.at(0, 1, 2));
+  EXPECT_EQ(64u, img.at(0, 2));
+  EXPECT_EQ(64u, img.at(0, 2, 0));
+  EXPECT_EQ(64u, img.at(0, 2, 1));
+  EXPECT_EQ(64u, img.at(0, 2, 2));
+  EXPECT_EQ(96u, img.at(0, 3));
+  EXPECT_EQ(96u, img.at(0, 3, 0));
+  EXPECT_EQ(96u, img.at(0, 3, 1));
+  EXPECT_EQ(96u, img.at(0, 3, 2));
 }
 
 TEST(image, read_png_8bit_rgba) {
@@ -208,20 +208,20 @@ TEST(image, read_png_8bit_rgba) {
   {
     image<uint8_t> img(path, image_type::bgr);
 
-    EXPECT_EQ(3, img.depth());  // alpha channel is just ignored
+    EXPECT_EQ(3u, img.depth());  // alpha channel is just ignored
 
     // bgr order
-    EXPECT_EQ(255, img.at(31, 31, 0));
-    EXPECT_EQ(32, img.at(31, 31, 1));
-    EXPECT_EQ(0, img.at(31, 31, 2));
+    EXPECT_EQ(255u, img.at(31, 31, 0));
+    EXPECT_EQ(32u, img.at(31, 31, 1));
+    EXPECT_EQ(0u, img.at(31, 31, 2));
   }
   {
     image<uint8_t> img(path, image_type::rgb);
 
     // rgb order
-    EXPECT_EQ(0, img.at(31, 31, 0));
-    EXPECT_EQ(32, img.at(31, 31, 1));
-    EXPECT_EQ(255, img.at(31, 31, 2));
+    EXPECT_EQ(0u, img.at(31, 31, 0));
+    EXPECT_EQ(32u, img.at(31, 31, 1));
+    EXPECT_EQ(255u, img.at(31, 31, 2));
   }
 }
 
@@ -233,9 +233,9 @@ TEST(image, read_png_8bit_rgba2gray) {
   image<uint8_t> img(path, image_type::grayscale);
   image<uint8_t> rgb(path, image_type::rgb);
 
-  EXPECT_EQ(32, img.width());
-  EXPECT_EQ(32, img.height());
-  EXPECT_EQ(1, img.depth());
+  EXPECT_EQ(32u, img.width());
+  EXPECT_EQ(32u, img.height());
+  EXPECT_EQ(1u, img.depth());
 
   for (size_t y = 0; y < 32; y++) {
     for (size_t x = 0; x < 32; x++) {
@@ -263,13 +263,13 @@ TEST(image, read_bmp_8bit) {
 
   image<uint8_t> img(path, image_type::rgb);
 
-  EXPECT_EQ(255, img.at(0, 0, 0));
-  EXPECT_EQ(255, img.at(0, 0, 1));
-  EXPECT_EQ(255, img.at(0, 0, 2));
+  EXPECT_EQ(255u, img.at(0, 0, 0));
+  EXPECT_EQ(255u, img.at(0, 0, 1));
+  EXPECT_EQ(255u, img.at(0, 0, 2));
 
-  EXPECT_EQ(0, img.at(31, 31, 0));
-  EXPECT_EQ(0, img.at(31, 31, 1));
-  EXPECT_EQ(255, img.at(31, 31, 2));
+  EXPECT_EQ(0u, img.at(31, 31, 0));
+  EXPECT_EQ(0u, img.at(31, 31, 1));
+  EXPECT_EQ(255u, img.at(31, 31, 2));
 }
 
 TEST(image, read_bmp_8bit_rgb2gray) {
@@ -281,7 +281,7 @@ TEST(image, read_bmp_8bit_rgb2gray) {
 
   uint8_t expected_y = (255 * 29) >> 8;
 
-  EXPECT_EQ(255, img.at(0, 0));
+  EXPECT_EQ(255u, img.at(0, 0));
   EXPECT_EQ(expected_y, img.at(31, 31));
 }
 
@@ -293,20 +293,20 @@ TEST(image, read_bmp_24bit) {
   {
     image<uint8_t> img(path, image_type::bgr);
 
-    EXPECT_EQ(3, img.depth());  // alpha channel is just ignored
+    EXPECT_EQ(3u, img.depth());  // alpha channel is just ignored
 
     // bgr order
-    EXPECT_EQ(255, img.at(31, 31, 0));
-    EXPECT_EQ(32, img.at(31, 31, 1));
-    EXPECT_EQ(0, img.at(31, 31, 2));
+    EXPECT_EQ(255u, img.at(31, 31, 0));
+    EXPECT_EQ(32u, img.at(31, 31, 1));
+    EXPECT_EQ(0u, img.at(31, 31, 2));
   }
   {
     image<uint8_t> img(path, image_type::rgb);
 
     // rgb order
-    EXPECT_EQ(0, img.at(31, 31, 0));
-    EXPECT_EQ(32, img.at(31, 31, 1));
-    EXPECT_EQ(255, img.at(31, 31, 2));
+    EXPECT_EQ(0u, img.at(31, 31, 0));
+    EXPECT_EQ(32u, img.at(31, 31, 1));
+    EXPECT_EQ(255u, img.at(31, 31, 2));
   }
 }
 
@@ -318,9 +318,9 @@ TEST(image, read_bmp_24bit_rgb2gray) {
   image<uint8_t> img(path, image_type::grayscale);
   image<uint8_t> rgb(path, image_type::rgb);
 
-  EXPECT_EQ(32, img.width());
-  EXPECT_EQ(32, img.height());
-  EXPECT_EQ(1, img.depth());
+  EXPECT_EQ(32u, img.width());
+  EXPECT_EQ(32u, img.height());
+  EXPECT_EQ(1u, img.depth());
 
   for (size_t y = 0; y < 32; y++) {
     for (size_t x = 0; x < 32; x++) {
@@ -346,11 +346,11 @@ TEST(image, resize) {
 
   img.resize(32, 32);
 
-  EXPECT_EQ(32, img.width());
-  EXPECT_EQ(32, img.height());
-  EXPECT_EQ(3, img.depth());
-  EXPECT_EQ((int)image_type::rgb, (int)img.type());
-  EXPECT_EQ(32 * 32 * 3, img.data().size());
+  EXPECT_EQ(32u, img.width());
+  EXPECT_EQ(32u, img.height());
+  EXPECT_EQ(3u, img.depth());
+  EXPECT_EQ(int(image_type::rgb), int(img.type()));
+  EXPECT_EQ(size_t(32 * 32 * 3), img.data().size());
 }
 
 TEST(image, empty) {
@@ -366,7 +366,7 @@ TEST(image, fill) {
   img.fill(127);
 
   for (auto i : img) {
-    EXPECT_EQ(i, 127);
+    EXPECT_EQ(i, 127u);
   }
 }
 
@@ -385,21 +385,21 @@ TEST(image, fromrgb) {
 
   img.from_rgb(rgb.begin(), rgb.end());
 
-  EXPECT_EQ(0, img.at(0, 0, 0));
-  EXPECT_EQ(127, img.at(0, 0, 1));
-  EXPECT_EQ(255, img.at(0, 0, 2));
+  EXPECT_EQ(0u, img.at(0, 0, 0));
+  EXPECT_EQ(127u, img.at(0, 0, 1));
+  EXPECT_EQ(255u, img.at(0, 0, 2));
 
-  EXPECT_EQ(1, img.at(1, 0, 0));
-  EXPECT_EQ(126, img.at(1, 0, 1));
-  EXPECT_EQ(254, img.at(1, 0, 2));
+  EXPECT_EQ(1u, img.at(1, 0, 0));
+  EXPECT_EQ(126u, img.at(1, 0, 1));
+  EXPECT_EQ(254u, img.at(1, 0, 2));
 
-  EXPECT_EQ(2, img.at(0, 1, 0));
-  EXPECT_EQ(125, img.at(0, 1, 1));
-  EXPECT_EQ(253, img.at(0, 1, 2));
+  EXPECT_EQ(2u, img.at(0, 1, 0));
+  EXPECT_EQ(125u, img.at(0, 1, 1));
+  EXPECT_EQ(253u, img.at(0, 1, 2));
 
-  EXPECT_EQ(3, img.at(1, 1, 0));
-  EXPECT_EQ(124, img.at(1, 1, 1));
-  EXPECT_EQ(252, img.at(1, 1, 2));
+  EXPECT_EQ(3u, img.at(1, 1, 0));
+  EXPECT_EQ(124u, img.at(1, 1, 1));
+  EXPECT_EQ(252u, img.at(1, 1, 2));
 }
 
 TEST(image, torgb) {

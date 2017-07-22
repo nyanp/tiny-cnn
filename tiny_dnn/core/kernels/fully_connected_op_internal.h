@@ -17,6 +17,7 @@ inline void fully_connected_op_internal(const tensor_t &in_data,
                                         const vec_t &bias,
                                         tensor_t &out_data,
                                         const fully_params &params,
+                                        const bool has_bias,
                                         const bool layer_parallelize) {
   for_i(layer_parallelize, in_data.size(), [&](size_t sample) {
     const vec_t &in = in_data[sample];
@@ -28,7 +29,7 @@ inline void fully_connected_op_internal(const tensor_t &in_data,
         out[i] += W[c * params.out_size_ + i] * in[c];
       }
 
-      if (params.has_bias_) {
+      if (has_bias) {
         out[i] += bias[i];
       }
     }
@@ -42,6 +43,7 @@ inline void fully_connected_op_internal(const tensor_t &prev_out,
                                         tensor_t &curr_delta,
                                         tensor_t &prev_delta,
                                         const fully_params &params,
+                                        const bool has_bias,
                                         const bool layer_parallelize) {
   for (size_t sample = 0; sample < prev_out.size(); sample++) {
     for (size_t c = 0; c < params.in_size_; c++) {
@@ -60,7 +62,7 @@ inline void fully_connected_op_internal(const tensor_t &prev_out,
                           &dW[sample][c * params.out_size_ + r.begin()]);
       }
 
-      if (params.has_bias_) {
+      if (has_bias) {
         // vec_t& db = *in_grad[2];
         for (size_t i = r.begin(); i < r.end(); i++) {
           db[sample][i] += curr_delta[sample][i];

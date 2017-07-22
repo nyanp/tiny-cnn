@@ -122,7 +122,7 @@ TEST(network, add) {
   network<sequential> net;
   net << convolutional_layer(32, 32, 5, 3, 6, padding::same);
 
-  EXPECT_EQ(net.depth(), 1);
+  EXPECT_EQ(net.depth(), 1u);
 }
 
 TEST(network, manual_init) {
@@ -137,9 +137,9 @@ TEST(network, manual_init) {
   vec_t *c1_b = net[0]->weights()[1];
   vec_t *f1_w = net[1]->weights()[0];
 
-  EXPECT_EQ(c1_w->size(), 9);
-  EXPECT_EQ(c1_b->size(), 1);
-  EXPECT_EQ(f1_w->size(), 2);
+  EXPECT_EQ(c1_w->size(), 9u);
+  EXPECT_EQ(c1_b->size(), 1u);
+  EXPECT_EQ(f1_w->size(), 2u);
 
   *c1_w = {0, 1, 2, 3, 4, 5, 6, 7, 8};
   *c1_b = {1};
@@ -707,6 +707,136 @@ TEST(network, trainable) {
   EXPECT_NE(w0, w0_after_update);
   EXPECT_EQ(w2, w2_after_update);
   EXPECT_NE(w4, w4_after_update);
+}
+
+TEST(network, fully_connected_train) {
+  network<sequential> nn;
+  adagrad optimizer;
+
+  nn << fully_connected_layer(3, 2) << sigmoid();
+
+  vec_t a(3), t(2), a2(3), t2(2);
+
+  // clang-format off
+  a[0] = 3.0f; a[1] = 0.0f; a[2] = -1.0f;
+  t[0] = 0.3f; t[1] = 0.7f;
+
+  a2[0] = 0.2f; a2[1] = 0.5f; a2[2] = 4.0f;
+  t2[0] = 0.5f; t2[1] = 0.1f;
+  // clang-format on
+
+  std::vector<vec_t> data, train;
+
+  for (int i = 0; i < 100; i++) {
+    data.push_back(a);
+    data.push_back(a2);
+    train.push_back(t);
+    train.push_back(t2);
+  }
+  optimizer.alpha = 0.1f;
+  nn.train<mse>(optimizer, data, train, 1, 10);
+
+  vec_t predicted = nn.predict(a);
+
+  EXPECT_NEAR(predicted[0], t[0], 1E-5);
+  EXPECT_NEAR(predicted[1], t[1], 1E-5);
+
+  predicted = nn.predict(a2);
+
+  EXPECT_NEAR(predicted[0], t2[0], 1E-5);
+  EXPECT_NEAR(predicted[1], t2[1], 1E-5);
+}
+
+TEST(network, fully_connected_train_different_batches) {
+  auto batch_sizes = {2, 7, 10, 12};
+  size_t data_size = std::accumulate(batch_sizes.begin(), batch_sizes.end(), 1,
+                                     std::multiplies<int>());
+  for (auto &batch_sz : batch_sizes) {
+    network<sequential> nn;
+    adagrad optimizer;
+
+    nn << fully_connected_layer(3, 2) << sigmoid();
+
+    vec_t a(3), t(2), a2(3), t2(2);
+
+    // clang-format off
+    a[0] = 3.0f; a[1] = 0.0f; a[2] = -1.0f;
+    t[0] = 0.3f; t[1] = 0.7f;
+
+    a2[0] = 0.2f; a2[1] = 0.5f; a2[2] = 4.0f;
+    t2[0] = 0.5f; t2[1] = 0.1f;
+    // clang-format on
+
+    std::vector<vec_t> data, train;
+
+    for (size_t i = 0; i < data_size; i++) {
+      data.push_back(a);
+      data.push_back(a2);
+      train.push_back(t);
+      train.push_back(t2);
+    }
+    optimizer.alpha = 0.1f;
+    nn.train<mse>(optimizer, data, train, batch_sz, 10);
+
+    vec_t predicted = nn.predict(a);
+
+    EXPECT_NEAR(predicted[0], t[0], 1E-5);
+    EXPECT_NEAR(predicted[1], t[1], 1E-5);
+
+    predicted = nn.predict(a2);
+
+    EXPECT_NEAR(predicted[0], t2[0], 1E-5);
+    EXPECT_NEAR(predicted[1], t2[1], 1E-5);
+  }
+}
+
+TEST(network, fully_connected_train2) {
+  network<sequential> nn;
+  gradient_descent optimizer;
+
+  nn << fully_connected_layer(4, 6) << tanh() << fully_connected_layer(6, 3)
+     << tanh();
+
+  vec_t a(4, 0.0), t(3, 0.0), a2(4, 0.0), t2(3, 0.0);
+
+  // clang-format off
+    a[0] = 3.0f; a[1] = 1.0f; a[2] = -1.0f; a[3] = 4.0f;
+    t[0] = 0.3f; t[1] = 0.7f; t[2] = 0.3f;
+
+    a2[0] = 1.0f; a2[1] = 0.0f; a2[2] = 4.0f; a2[3] = 2.0f;
+    t2[0] = 0.6f; t2[1] = 0.0f; t2[2] = 0.1f;
+  // clang-format on
+
+  std::vector<vec_t> data, train;
+
+  for (int i = 0; i < 100; i++) {
+    data.push_back(a);
+    data.push_back(a2);
+    train.push_back(t);
+    train.push_back(t2);
+  }
+  optimizer.alpha = 0.1f;
+  nn.train<mse>(optimizer, data, train, 1, 10);
+
+  vec_t predicted = nn.predict(a);
+
+  EXPECT_NEAR(predicted[0], t[0], 1E-4);
+  EXPECT_NEAR(predicted[1], t[1], 1E-4);
+
+  predicted = nn.predict(a2);
+
+  EXPECT_NEAR(predicted[0], t2[0], 1E-4);
+  EXPECT_NEAR(predicted[1], t2[1], 1E-4);
+}
+
+TEST(network, fully_connected_gradient_check) {
+  network<sequential> nn;
+  nn << fully_connected_layer(50, 10) << tanh();
+
+  const auto test_data = generate_gradient_check_data(nn.in_data_size());
+  nn.init_weight();
+  EXPECT_TRUE(nn.gradient_check<mse>(test_data.first, test_data.second,
+                                     epsilon<float_t>(), GRAD_CHECK_ALL));
 }
 
 }  // namespace tiny_dnn
