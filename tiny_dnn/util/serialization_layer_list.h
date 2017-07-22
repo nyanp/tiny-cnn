@@ -30,10 +30,9 @@ void register_layers(T* h) {
   h->template register_layer<max_pooling_layer>("maxpool");
   h->template register_layer<max_unpooling_layer>("maxunpool");
   h->template register_layer<power_layer>("power");
-  h->template register_layer<quantized_convolutional_layer>("q_conv");
-  h->template register_layer<quantized_deconvolutional_layer>("q_deconv");
-  h->template register_layer<quantized_fully_connected_layer>(
-    "q_fully_connected");
+  //h->template register_layer<quantized_convolutional_layer>("q_conv");
+  //h->template register_layer<quantized_deconvolutional_layer>("q_deconv");
+  //h->template register_layer<quantized_fully_connected_layer>("q_fully_connected");
   h->template register_layer<recurrent_cell_layer>("recurrent_cell");
   h->template register_layer<slice_layer>("slice");
 

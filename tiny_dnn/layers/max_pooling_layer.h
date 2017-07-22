@@ -37,7 +37,7 @@ class max_pooling_layer : public layer {
                     size_t in_height,
                     size_t in_channels,
                     size_t pooling_size,
-                    backend_t backend_type = core::default_engine())
+                    backend_t backend_type = core::default_backend())
     : max_pooling_layer(in_width,
                         in_height,
                         in_channels,
@@ -48,7 +48,7 @@ class max_pooling_layer : public layer {
   max_pooling_layer(const shape3d &in_shape,
                     size_t pooling_size,
                     size_t stride,
-                    backend_t backend_type = core::default_engine())
+                    backend_t backend_type = core::default_backend())
     : max_pooling_layer(in_shape.width_,
                         in_shape.height_,
                         in_shape.depth_,
@@ -61,7 +61,7 @@ class max_pooling_layer : public layer {
                     size_t in_channels,
                     size_t pooling_size,
                     size_t stride,
-                    backend_t backend_type = core::default_engine())
+                    backend_t backend_type = core::default_backend())
     : max_pooling_layer(in_width,
                         in_height,
                         in_channels,
@@ -88,7 +88,7 @@ class max_pooling_layer : public layer {
                     size_t stride_x,
                     size_t stride_y,
                     padding pad_type       = padding::valid,
-                    backend_t backend_type = core::default_engine())
+                    backend_t backend_type = core::default_backend())
     : layer({vector_type::data}, {vector_type::data}) {
     set_maxpool_params(
       shape3d(in_width, in_height, in_channels),
@@ -106,7 +106,7 @@ class max_pooling_layer : public layer {
   max_pooling_layer(max_pooling_layer &&other)  // NOLINT
     : layer(std::move(other)), params_(std::move(other.params_)) {
     init_connection();
-    init_backend(std::move(layer::engine()));
+    init_backend(std::move(layer::backend_type()));
   }
 
   size_t fan_in_size() const override { return params_.out2in[0].size(); }
@@ -118,7 +118,7 @@ class max_pooling_layer : public layer {
     // forward convolutional op context
     fwd_ctx_.set_in_out(in_data, out_data);
     fwd_ctx_.setParallelize(layer::parallelize());
-    fwd_ctx_.setEngine(layer::engine());
+    fwd_ctx_.setBackendType(layer::backend_type());
 
     // launch convolutional kernel
     kernel_fwd_->compute(fwd_ctx_);
@@ -131,7 +131,7 @@ class max_pooling_layer : public layer {
     // backward convolutional op context
     bwd_ctx_.set_in_out(in_data, out_data, out_grad, in_grad);
     bwd_ctx_.setParallelize(layer::parallelize());
-    bwd_ctx_.setEngine(layer::engine());
+    bwd_ctx_.setBackendType(layer::backend_type());
 
     // launch convolutional kernel
     kernel_back_->compute(bwd_ctx_);

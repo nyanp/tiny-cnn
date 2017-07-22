@@ -327,6 +327,7 @@ struct LoadAndConstruct<tiny_dnn::power_layer> {
   }
 };
 
+/*
 template <>
 struct LoadAndConstruct<tiny_dnn::quantized_convolutional_layer> {
   template <class Archive>
@@ -387,6 +388,7 @@ struct LoadAndConstruct<tiny_dnn::quantized_fully_connected_layer> {
     construct(in_dim, out_dim, has_bias);
   }
 };
+*/
 
 template <>
 struct LoadAndConstruct<tiny_dnn::recurrent_cell_layer> {
@@ -702,6 +704,7 @@ struct serialization_buddy {
         make_nvp("factor", layer.factor_), make_nvp("scale", layer.scale_));
   }
 
+/*
   template <class Archive>
   static inline void serialize(Archive &ar,
                                tiny_dnn::quantized_convolutional_layer &layer) {
@@ -740,6 +743,7 @@ struct serialization_buddy {
         make_nvp("out_size", params_.out_size_),
         make_nvp("has_bias", params_.has_bias_));
   }
+*/
 
   template <class Archive>
   static inline void serialize(Archive &ar,

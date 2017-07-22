@@ -67,7 +67,7 @@ class convolutional_layer : public layer {
                       bool has_bias          = true,
                       size_t w_stride        = 1,
                       size_t h_stride        = 1,
-                      backend_t backend_type = core::default_engine())
+                      backend_t backend_type = core::default_backend())
     : convolutional_layer(in_width,
                           in_height,
                           window_size,
@@ -116,7 +116,7 @@ class convolutional_layer : public layer {
                       bool has_bias          = true,
                       size_t w_stride        = 1,
                       size_t h_stride        = 1,
-                      backend_t backend_type = core::default_engine())
+                      backend_t backend_type = core::default_backend())
     : convolutional_layer(in_width,
                           in_height,
                           window_width,
@@ -166,7 +166,7 @@ class convolutional_layer : public layer {
                       bool has_bias          = true,
                       size_t w_stride        = 1,
                       size_t h_stride        = 1,
-                      backend_t backend_type = core::default_engine())
+                      backend_t backend_type = core::default_backend())
     : convolutional_layer(in_width,
                           in_height,
                           window_size,
@@ -218,7 +218,7 @@ class convolutional_layer : public layer {
                       bool has_bias          = true,
                       size_t w_stride        = 1,
                       size_t h_stride        = 1,
-                      backend_t backend_type = core::default_engine())
+                      backend_t backend_type = core::default_backend())
     : layer(std_input_order(has_bias), {vector_type::data}) {
     conv_set_params(shape3d(in_width, in_height, in_channels), window_width,
                     window_height, out_channels, pad_type, has_bias, w_stride,
@@ -235,7 +235,7 @@ class convolutional_layer : public layer {
       kernel_fwd_(std::move(other.kernel_fwd_)),
       kernel_back_(std::move(other.kernel_back_)),
       cws_(std::move(other.cws_)) {
-    init_backend(std::move(other.engine()));
+    init_backend(std::move(other.backend_type()));
   }
 
   ///< number of incoming connections for each output unit
@@ -265,7 +265,7 @@ class convolutional_layer : public layer {
     // forward convolutional op context
     fwd_ctx_.set_in_out(fwd_in_data_, out_data);
     fwd_ctx_.setParallelize(layer::parallelize());
-    fwd_ctx_.setEngine(layer::engine());
+    fwd_ctx_.setBackendType(layer::backend_type());
 
     // launch convolutional kernel
     kernel_fwd_->compute(fwd_ctx_);
@@ -300,7 +300,7 @@ class convolutional_layer : public layer {
     bwd_ctx_.set_in_out(bwd_in_data_, out_data, out_grad, bwd_in_grad_);
     bwd_ctx_.setParams(&params_);
     bwd_ctx_.setParallelize(layer::parallelize());
-    bwd_ctx_.setEngine(layer::engine());
+    bwd_ctx_.setBackendType(layer::backend_type());
 
     // launch convolutional kernel
     kernel_back_->compute(bwd_ctx_);
@@ -461,7 +461,7 @@ class convolutional_layer : public layer {
            conv_out_length(in_height, window_height, h_stride, pad_type);
   }
 
-  void createOp() override { init_backend(layer::engine()); }
+  void createOp() override { init_backend(layer::backend_type()); }
 
   void init_backend(const backend_t backend_type) {
     core::OpKernelConstruction ctx =

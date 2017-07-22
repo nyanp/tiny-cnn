@@ -28,15 +28,15 @@ if(USE_SERIALIZER)
     target_link_libraries(example_mnist_test
         ${project_library_target_name} ${REQUIRED_LIBRARIES})
 
-    add_executable(example_mnist_quantized_train mnist/quantized.cpp ${tiny_dnn_headers})
-    target_link_libraries(example_mnist_quantized_train
-        ${project_library_target_name} ${REQUIRED_LIBRARIES})
+    #add_executable(example_mnist_quantized_train mnist/quantized.cpp ${tiny_dnn_headers})
+    #target_link_libraries(example_mnist_quantized_train
+    #    ${project_library_target_name} ${REQUIRED_LIBRARIES})
 
     add_executable(example_deconv_train deconv/train.cpp ${tiny_dnn_headers})
     target_link_libraries(example_deconv_train
         ${project_library_target_name} ${REQUIRED_LIBRARIES})
 
-    cotire(example_mnist_train example_mnist_test example_mnist_quantized_train example_deconv_train)
+    cotire(example_mnist_train example_mnist_test example_deconv_train)
 endif()
 
 add_executable(example_deconv_visual deconv/visual.cpp ${tiny_dnn_headers})

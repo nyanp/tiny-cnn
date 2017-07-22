@@ -22,14 +22,23 @@
 namespace tiny_dnn {
 namespace core {
 
-// TODO(edgar): remove this
-class context;
-
-enum class backend_t { internal, nnpack, libdnn, avx, opencl };
+enum class backend_t {
+  internal,
+  internal_quantization,
+  internal_eficient_quantization,
+  nnpack,
+  libdnn,
+  avx,
+  opencl
+};
 
 inline std::ostream &operator<<(std::ostream &os, backend_t type) {
   switch (type) {
     case backend_t::internal: os << "Internal"; break;
+    case backend_t::internal_quantization: os << "Internal quantization"; break;
+    case backend_t::internal_eficient_quantization:
+      os << "Internal eficient quantization";
+      break;
     case backend_t::nnpack: os << "NNPACK"; break;
     case backend_t::libdnn: os << "LibDNN"; break;
     case backend_t::avx: os << "AVX"; break;
@@ -39,7 +48,7 @@ inline std::ostream &operator<<(std::ostream &os, backend_t type) {
   return os;
 }
 
-inline backend_t default_engine() {
+inline backend_t default_backend() {
 #ifdef CNN_USE_AVX
 #if defined(__AVX__) || defined(__AVX2__)
   return backend_t::avx;
@@ -104,13 +113,14 @@ inline nnp_convolution_transform_strategy nnp_kts() {
 }
 #endif
 
+
+#if 0
+
 class backend {
  public:
   // context holds solution-dependent parameters
   // context should be able to hold any types of structures (like boost::any)
-  explicit backend(context *ctx_ = nullptr) {
-    CNN_UNREFERENCED_PARAMETER(ctx_);
-  }
+  explicit backend() {}
 
   // core math functions
 
@@ -155,16 +165,14 @@ class backend {
                        std::vector<tensor_t *> &out_grad,
                        std::vector<tensor_t *> &in_grad) = 0;
 
-  context *get_context() const { return ctx_; }
-
   void set_layer(layer *layer) { layer_ = layer; }
 
   virtual backend_t type() const = 0;
 
  protected:
-  context *ctx_;
   layer *layer_;
 };
+#endif
 
 }  // namespace core
 }  // namespace tiny_dnn

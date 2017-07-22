@@ -35,18 +35,24 @@ class Conv2dOp : public core::OpKernel {
     // call convolution algorithm depending
     // on the selected engine type
 
-    const core::backend_t engine = context.engine();
+    const core::backend_t backend = context.backend_type();
 
-    if (engine == core::backend_t::internal) {
+    if (backend == core::backend_t::internal) {
       kernels::conv2d_op_internal(in_data, W[0], bias[0], out_data, params,
                                   context.parallelize());
-    } else if (engine == core::backend_t::nnpack) {
+    } else if (backend == core::backend_t::nnpack) {
       kernels::conv2d_op_nnpack(in_data, W[0], bias[0], out_data, params);
-    } else if (engine == core::backend_t::avx) {
+    } else if (backend == core::backend_t::avx) {
       kernels::conv2d_op_avx(in_data, W[0], bias[0], out_data, params,
                              context.parallelize());
+#if 0
+		} else if (engine == core::backend_t::internal_quantization) {
+			kernels::tiny_quantized_conv2d_kernel(*params_c_, *in[i], W, bias, out[i], layer_->parallelize());
+		} else if (engine == core::backend_t::internal_eficient_quantization) {
+			kernels::tiny_quantized_conv2d_kernel(*params_c_, *in[i], W, bias, in_r[i], W_r, b_r, out[i], out_r[i], layer_->parallelize());
+#endif
     } else {
-      throw nn_error("Not supported engine: " + to_string(engine));
+      throw nn_error("Not supported backend: " + to_string(backend));
     }
   }
 };

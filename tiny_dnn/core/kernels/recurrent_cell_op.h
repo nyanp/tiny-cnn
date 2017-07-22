@@ -37,16 +37,16 @@ class RecurrentCellOp : public core::OpKernel {
 
     // call the algorithm depending  on the selected engine type
 
-    const core::backend_t engine = context.engine();
+    const core::backend_t backend = context.backend_type();
 
-    if (engine == core::backend_t::internal || engine == core::backend_t::avx) {
+    if (backend == core::backend_t::internal || backend == core::backend_t::avx) {
       kernels::recurrent_cell_op_internal(
         in_data, prev_h, U[0], W[0], V[0],
         params.has_bias_ ? (*bias)[0] : vec_t(),
         params.has_bias_ ? (*c)[0] : vec_t(), out_data, next_h, params,
         context.parallelize());
     } else {
-      throw nn_error("Not supported engine: " + to_string(engine));
+      throw nn_error("Not supported backend: " + to_string(backend));
     }
   }
 };

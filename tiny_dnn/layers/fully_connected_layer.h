@@ -26,7 +26,7 @@ class fully_connected_layer : public layer {
   fully_connected_layer(size_t in_dim,
                         size_t out_dim,
                         bool has_bias          = true,
-                        backend_t backend_type = core::default_engine())
+                        backend_t backend_type = core::default_backend())
     : layer(std_input_order(has_bias), {vector_type::data}) {
     set_params(in_dim, out_dim, has_bias);
     init_backend(backend_type);
@@ -39,7 +39,7 @@ class fully_connected_layer : public layer {
       params_(std::move(other.params_)),
       kernel_fwd_(std::move(other.kernel_fwd_)),
       kernel_back_(std::move(other.kernel_back_)) {
-    init_backend(std::move(other.engine()));
+    init_backend(std::move(other.backend_type()));
   }
 
   size_t fan_in_size() const override { return params_.in_size_; }
@@ -66,7 +66,7 @@ class fully_connected_layer : public layer {
     // forward fully connected op context
     fwd_ctx_.set_in_out(in_data, out_data);
     fwd_ctx_.setParallelize(layer::parallelize());
-    fwd_ctx_.setEngine(layer::engine());
+    fwd_ctx_.setBackendType(layer::backend_type());
 
     // launch fully connected kernel
     kernel_fwd_->compute(fwd_ctx_);
@@ -79,7 +79,7 @@ class fully_connected_layer : public layer {
     // backward fully connected op context
     bwd_ctx_.set_in_out(in_data, out_data, out_grad, in_grad);
     bwd_ctx_.setParallelize(layer::parallelize());
-    bwd_ctx_.setEngine(layer::engine());
+    bwd_ctx_.setBackendType(layer::backend_type());
 
     // launch fully connected kernel
     kernel_back_->compute(bwd_ctx_);

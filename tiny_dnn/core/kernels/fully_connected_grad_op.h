@@ -36,18 +36,28 @@ class FullyConnectedGradOp : public core::OpKernel {
 
     // call the algorithm depending on the selected engine type
 
-    const core::backend_t engine = context.engine();
+    const core::backend_t backend = context.backend_type();
 
-    if (engine == core::backend_t::internal) {
+    if (backend == core::backend_t::internal) {
       kernels::fully_connected_op_internal(
         prev_out, W[0], dW, params.has_bias_ ? *db : dummy, curr_delta,
         prev_delta, params, context.parallelize());
-    } else if (engine == core::backend_t::avx) {
+    } else if (backend == core::backend_t::avx) {
       kernels::fully_connected_op_avx(
         prev_out, W[0], dW, params.has_bias_ ? *db : dummy, curr_delta,
         prev_delta, params, context.parallelize());
+#if 0
+		} else if (engine == core::backend_t::internal_quantization) {
+			kernels::tiny_quantized_fully_connected_back_kernel(
+        *params_f_, prev_out[i], W, dW[i], prev_delta[i], curr_delta[i], db[i],
+        layer_->parallelize());
+		} else if (engine == core::backend_t::internal_eficient_quantization) {
+			kernels::tiny_quantized_fully_connected_kernel(
+        *params_f_, in[i], W, b, in_r[i], W_r, b_r, out[i], out_r[i],
+        layer_->parallelize());
+#endif
     } else {
-      throw nn_error("Not supported engine: " + to_string(engine));
+      throw nn_error("Not supported backend: " + to_string(backend));
     }
   }
 };

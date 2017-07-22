@@ -79,9 +79,9 @@ class layer : public node {
 
   void set_parallelize(bool parallelize) { parallelize_ = parallelize; }
 
-  void set_backend(std::shared_ptr<core::backend> backend) {
-    backend_ = backend;
-  }
+  //void set_backend(std::shared_ptr<core::backend> backend) {
+  //  backend_ = backend;
+  //}
 
   void set_backend_type(core::backend_t backend_type) {
     backend_type_ = backend_type;
@@ -93,9 +93,9 @@ class layer : public node {
   bool parallelize() const { return parallelize_; }
 
   // TODO(edgar): Deprecated: use the below method
-  core::backend_t backend_type() const { return backend_->type(); }
+  core::backend_t backend_type() const { return backend_type_; }
 
-  core::backend_t engine() const { return backend_type_; }
+  //core::backend_t engine() const { return backend_type_; }
 
   virtual std::string kernel_file() const {
     return std::string("empty_kernel_str");
@@ -111,7 +111,7 @@ class layer : public node {
 
   Device *device() const { return device_ptr_; }
 
-  std::shared_ptr<core::backend> backend() { return backend_; }
+  //std::shared_ptr<core::backend> backend() { return backend_; }
 
   ///< number of incoming edges in this layer
   size_t in_channels() const { return in_channels_; }
@@ -734,7 +734,7 @@ class layer : public node {
   /** The current backend type for operations */
   core::backend_t backend_type_;
   /** The backend instance (deprecated) */
-  std::shared_ptr<core::backend> backend_;
+  //std::shared_ptr<core::backend> backend_;
   /** Pointer to the device on which the layer/node will run */
   Device *device_ptr_ = nullptr;
   /** Used in update_weight method. Kept as a member variable to reduce

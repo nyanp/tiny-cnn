@@ -114,7 +114,7 @@ static core::backend_t parse_backend_name(const std::string &name) {
       return static_cast<core::backend_t>(i);
     }
   }
-  return core::default_engine();
+  return core::default_backend();
 }
 
 static void usage(const char *argv0) {
@@ -130,7 +130,7 @@ int main(int argc, char **argv) {
   int epochs                   = 30;
   std::string data_path        = "";
   int minibatch_size           = 10;
-  core::backend_t backend_type = core::default_engine();
+  core::backend_t backend_type = core::default_backend();
 
   if (argc == 2) {
     std::string argname(argv[1]);

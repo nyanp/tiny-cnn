@@ -468,6 +468,7 @@ TEST(serialization, serialize_power) {
   check_sequential_network_model_serialization(net);
 }
 
+/*
 TEST(serialization, serialize_q_conv) {
   network<sequential> net;
 
@@ -569,6 +570,7 @@ TEST(serialization, serialize_q_fully) {
   EXPECT_EQ(net[0]->out_shape()[0], shape3d(20, 1, 1));
   check_sequential_network_model_serialization(net);
 }
+*/
 
 TEST(serialization, serialize_slice) {
   std::string json;

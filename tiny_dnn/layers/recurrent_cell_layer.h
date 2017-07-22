@@ -58,7 +58,7 @@ class recurrent_cell_layer : public layer {
                        size_t out_dim,
                        bool has_bias                = true,
                        activation_layer *activation = new tanh_layer,
-                       backend_t backend_type       = core::default_engine())
+                       backend_t backend_type       = core::default_backend())
     : layer(recurrent_order(has_bias),  // output bias
             {vector_type::data,         // output vector
              vector_type::aux}) {
@@ -73,7 +73,7 @@ class recurrent_cell_layer : public layer {
       params_(std::move(other.params_)),
       kernel_fwd_(std::move(other.kernel_fwd_)),
       kernel_back_(std::move(other.kernel_back_)) {
-    init_backend(std::move(other.engine()));
+    init_backend(std::move(other.backend_type()));
   }
 
   size_t fan_in_size(size_t i) const override { return in_shape()[i].width_; }
@@ -108,7 +108,7 @@ class recurrent_cell_layer : public layer {
     // forward fully connected op context
     fwd_ctx_.set_in_out(in_data, out_data);
     fwd_ctx_.setParallelize(layer::parallelize());
-    fwd_ctx_.setEngine(layer::engine());
+    fwd_ctx_.setBackendType(layer::backend_type());
 
     // launch recurrent kernel
     kernel_fwd_->compute(fwd_ctx_);
@@ -121,7 +121,7 @@ class recurrent_cell_layer : public layer {
     // backward fully connected op context
     bwd_ctx_.set_in_out(in_data, out_data, out_grad, in_grad);
     bwd_ctx_.setParallelize(layer::parallelize());
-    bwd_ctx_.setEngine(layer::engine());
+    bwd_ctx_.setBackendType(layer::backend_type());
 
     // launch recurrent kernel
     kernel_back_->compute(bwd_ctx_);

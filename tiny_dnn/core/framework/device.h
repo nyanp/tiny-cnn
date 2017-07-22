@@ -78,10 +78,10 @@ inline void Device::registerOp(layer &l) {
                    "Device constructor");
   }
 
-  if (l.engine() != core::backend_t::opencl &&
-      l.engine() != core::backend_t::libdnn) {
+  if (l.backend_type() != core::backend_t::opencl &&
+      l.backend_type() != core::backend_t::libdnn) {
     throw nn_error("Cannot register layer: " + l.layer_type() +
-                   ". Enabled engine: " + to_string(l.engine()) +
+                   ". Enabled backend: " + to_string(l.backend_type()) +
                    ". OpenCL engine "
                    "(backend_t::opencl) should be used.");
   }

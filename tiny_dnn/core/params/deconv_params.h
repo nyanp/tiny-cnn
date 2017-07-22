@@ -7,6 +7,8 @@
 */
 #pragma once
 
+#include "params.h"
+
 namespace tiny_dnn {
 namespace core {
 
@@ -17,7 +19,8 @@ struct deconv_layer_worker_specific_storage {
   tensor_t curr_delta_padded;
 };
 
-struct deconv_params {
+class deconv_params : public Params {
+ public:
   connection_table tbl;
   index3d<size_t> in;
   index3d<size_t> out;
@@ -28,6 +31,10 @@ struct deconv_params {
   size_t w_stride;
   size_t h_stride;
 };
+
+inline deconv_params &Params::deconv() {
+  return *(static_cast<deconv_params *>(this));
+}
 
 }  // namespace core
 }  // namespace tiny_dnn

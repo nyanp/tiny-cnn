@@ -32,8 +32,8 @@
 #include "tiny_dnn/layers/max_pooling_layer.h"
 #include "tiny_dnn/layers/max_unpooling_layer.h"
 #include "tiny_dnn/layers/power_layer.h"
-#include "tiny_dnn/layers/quantized_convolutional_layer.h"
-#include "tiny_dnn/layers/quantized_deconvolutional_layer.h"
+//#include "tiny_dnn/layers/quantized_convolutional_layer.h"
+//#include "tiny_dnn/layers/quantized_deconvolutional_layer.h"
 #include "tiny_dnn/layers/recurrent_cell_layer.h"
 #include "tiny_dnn/layers/slice_layer.h"
 
@@ -90,7 +90,7 @@ namespace layers {
 
 using conv = tiny_dnn::convolutional_layer;
 
-using q_conv = tiny_dnn::quantized_convolutional_layer;
+// using q_conv = tiny_dnn::quantized_convolutional_layer;
 
 using max_pool = tiny_dnn::max_pooling_layer;
 

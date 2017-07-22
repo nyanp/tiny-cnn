@@ -25,7 +25,7 @@ namespace tiny_dnn {
 class global_average_pooling_layer : public layer {
  public:
   global_average_pooling_layer(const shape3d &in_shape,
-                               backend_t backend_type = core::default_engine())
+                               backend_t backend_type = core::default_backend())
     : global_average_pooling_layer(
         in_shape.width_, in_shape.height_, in_shape.depth_, backend_type) {}
 
@@ -37,7 +37,7 @@ class global_average_pooling_layer : public layer {
   global_average_pooling_layer(size_t in_width,
                                size_t in_height,
                                size_t in_channels,
-                               backend_t backend_type = core::default_engine())
+                               backend_t backend_type = core::default_backend())
     : layer({vector_type::data}, {vector_type::data}) {
     set_global_avepool_params(shape3d(in_width, in_height, in_channels),
                               shape3d(in_channels, 1, 1));
@@ -48,7 +48,7 @@ class global_average_pooling_layer : public layer {
   // move constructor
   global_average_pooling_layer(global_average_pooling_layer &&other)  // NOLINT
     : layer(std::move(other)), params_(std::move(other.params_)) {
-    init_backend(std::move(layer::engine()));
+    init_backend(std::move(layer::backend_type()));
   }
 
   size_t fan_in_size() const override {
@@ -61,7 +61,7 @@ class global_average_pooling_layer : public layer {
                            std::vector<tensor_t *> &out_data) override {
     fwd_ctx_.set_in_out(in_data, out_data);
     fwd_ctx_.setParallelize(layer::parallelize());
-    fwd_ctx_.setEngine(layer::engine());
+    fwd_ctx_.setBackendType(layer::backend_type());
 
     kernel_fwd_->compute(fwd_ctx_);
   }
@@ -72,7 +72,7 @@ class global_average_pooling_layer : public layer {
                         std::vector<tensor_t *> &in_grad) override {
     bwd_ctx_.set_in_out(in_data, out_data, out_grad, in_grad);
     bwd_ctx_.setParallelize(layer::parallelize());
-    bwd_ctx_.setEngine(layer::engine());
+    bwd_ctx_.setBackendType(layer::backend_type());
 
     kernel_back_->compute(bwd_ctx_);
   }

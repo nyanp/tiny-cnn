@@ -33,12 +33,12 @@ class MaxPoolOp : public core::OpKernel {
     // call convolution algorithm depending
     // on the selected engine type
 
-    const core::backend_t engine = context.engine();
+    const core::backend_t backend = context.backend_type();
 
-    if (engine == core::backend_t::internal) {
+    if (backend == core::backend_t::internal) {
       kernels::maxpool_op_internal(in_data, out_data, params.out2inmax,
                                    params.out2in, context.parallelize());
-    } else if (engine == core::backend_t::nnpack) {
+    } else if (backend == core::backend_t::nnpack) {
       // NNPACK supports stride != 2 or pool_size !=2
       // there's optimization over stride=2 and pool_size=2
       /*
@@ -52,11 +52,11 @@ class MaxPoolOp : public core::OpKernel {
 
       */
       kernels::maxpool_op_nnpack(in_data, out_data, params);
-    } else if (engine == core::backend_t::avx) {
+    } else if (backend == core::backend_t::avx) {
       kernels::maxpool_op_avx(in_data, out_data, params.out2inmax,
                               params.out2in, context.parallelize());
     } else {
-      throw nn_error("Not supported engine: " + to_string(engine));
+      throw nn_error("Not supported backend: " + to_string(backend));
     }
   }
 };

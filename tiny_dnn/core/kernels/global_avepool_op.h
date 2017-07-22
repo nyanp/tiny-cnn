@@ -28,9 +28,9 @@ class GlobalAvePoolOp : public core::OpKernel {
     // initialize outputs
     fill_tensor(out_data, float_t{0});
 
-    const core::backend_t engine = context.engine();
+    const core::backend_t backend = context.backend_type();
 
-    if (engine == core::backend_t::avx) {
+    if (backend == core::backend_t::avx) {
 #ifdef CNN_USE_AVX
       kernels::global_avepool_op_avx(in_data, out_data, params,
                                      context.parallelize());
