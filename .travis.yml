@@ -16,6 +16,8 @@ cache:
   pip: true
   directories:
     - $HOME/.pip-cache/
+    # store old benchmarks binary here for comparison
+    - $HOME/.benchmarks/
 
 addons:
   apt:
@@ -48,6 +50,7 @@ env:
     - USE_TBB=ON
     - BUILD_TESTS=ON
     - BUILD_EXAMPLES=ON
+    - BUILD_BENCHMARKS=OFF
     - COVERALLS=ON
 
   matrix:
@@ -59,6 +62,11 @@ matrix:
   exclude: # On OSX g++ is a symlink to clang++ by default
     - os: osx
       compiler: gcc
+
+  include:
+    - os: linux
+      compiler: gcc
+      env: BUILD_BENCHMARKS=ON USE_AVX=ON
 
 before_install:
   - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$CXX" == "g++" ]; then
@@ -82,7 +90,8 @@ before_script:
             -DBUILD_TESTS=$BUILD_TESTS
             -DCOVERALLS=$COVERALLS
             -DUSE_ASAN=ON
-            -DBUILD_EXAMPLES=$BUILD_EXAMPLES .;
+            -DBUILD_EXAMPLES=$BUILD_EXAMPLES
+            -DBUILD_BENCHMARKS=$BUILD_BENCHMARKS .;
     fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$CXX" == "clang++" ]; then
       cmake -DUSE_SSE=$USE_SSE
@@ -97,8 +106,24 @@ before_script:
     fi
 
 script:
-  - make -j2
-  - test/tiny_dnn_test
+  - if [ "$BUILD_BENCHMARKS" == "ON" ]; then
+      make tiny_dnn_benchmarks;
+      benchmarks/tiny_dnn_benchmarks;
+
+      if [ -f "$HOME/.benchmarks/tiny_dnn_benchmarks" ]; then
+        ./benchmark-src/tools/compare_bench.py $HOME/.benchmarks/tiny_dnn_benchmarks benchmarks/tiny_dnn_benchmarks;
+      else
+        echo "No previous benchmarks binary to compare with, skipping comparison!";
+      fi
+
+      cp benchmarks/tiny_dnn_benchmarks $HOME/.benchmarks;
+      echo "Saved current benchmarks binary for next build.";
+
+    else
+      make -j2;
+      test/tiny_dnn_test;
+    fi
+
   - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$CXX" == "g++-4.8" ] && [ "$USE_SSE" == "ON" ] && [ "$USE_AVX" == "ON" ] && [ "$USE_DOUBLE" == "ON" ]; then
       make clang-format-check;
     fi

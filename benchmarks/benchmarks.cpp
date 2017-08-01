@@ -11,7 +11,11 @@
 #include "benchmark/benchmark.h"
 #include "tiny_dnn/tiny_dnn.h"
 
-#include "bm_global_avepool.h"
+#include "bm_fully_connected.h"
+
+// todo (karandesai, Randl): refactor needed after xtensor integration
+//#include "bm_global_avepool.h"
+
 using namespace tiny_dnn::benchmarks;
 
 BENCHMARK_MAIN();
