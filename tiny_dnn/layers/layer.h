@@ -37,6 +37,10 @@
 #include "tiny_dnn/util/image.h"
 #endif
 
+#ifdef CNN_USE_HDF
+#include <H5Cpp.h>
+#endif
+
 namespace tiny_dnn {
 
 /**
@@ -453,6 +457,52 @@ class layer : public node {
       parameter->load(is, precision);
     }
   }
+
+#ifdef CNN_USE_HDF
+  void load(const std::string &file_path, const std::string &layer_name) {
+    // this id can be seen as H5::File object
+    hid_t file_id = H5Fopen(file_path.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+
+    // it will have multiple H5::Group objects, each representing a layer
+    hid_t layer_id = H5Gopen1(file_id, layer_name.c_str());
+
+    // each H5::Group shall have one H5::Attribute named 'weight_names'
+    hid_t parameter_names_id = H5Aopen(layer_id, "weight_names", H5P_DEFAULT);
+
+    // type is required to read names from H5::Attribute as vector of string
+    hid_t type =
+      H5Tget_native_type(H5Aget_type(parameter_names_id), H5T_DIR_ASCEND);
+
+    // get the maximum character length of parameter name
+    H5A_info_t a_info;
+    H5Aget_info(parameter_names_id, &a_info);
+    size_t max_parameter_name_length = a_info.data_size / parameters_.size();
+
+    // string buffer to accumulate data from H5::Attribute
+    char parameter_names_buf[1000];
+
+    // read parameter names into vector of strings
+    H5Aread(parameter_names_id, type, parameter_names_buf);
+    std::vector<std::string> parameter_names;
+    for (size_t i = 0; i < parameters_.size(); i++) {
+      std::string parameter_name(
+        &parameter_names_buf[i * max_parameter_name_length]);
+      if (parameter_name.length() > max_parameter_name_length) {
+        parameter_name = parameter_name.substr(0, max_parameter_name_length);
+      }
+      parameter_names.push_back(parameter_name);
+    }
+    H5Aclose(parameter_names_id);
+
+    // parameter_names vector will usually have 1 or 2 members named
+    // <layer_name>/kernel:0 and <layer_name>/bias:0
+    for (size_t i = 0; i < parameter_names.size(); i++) {
+      parameters_[i]->load(file_path, layer_name + "/" + parameter_names[i]);
+    }
+    H5Gclose(layer_id);
+    H5Fclose(file_id);
+  }
+#endif
 
 /////////////////////////////////////////////////////////////////////////
 // visualize

@@ -36,6 +36,7 @@ addons:
     # caffe-importer dependencies
     - libprotobuf-dev
     - protobuf-compiler
+    - libhdf5-dev
 
 branches:
   only:
@@ -82,6 +83,7 @@ before_script:
             -DUSE_DOUBLE=$USE_DOUBLE
             -DBUILD_TESTS=$BUILD_TESTS
             -DCOVERALLS=$COVERALLS
+            -DUSE_HDF=ON
             -DUSE_ASAN=ON
             -DBUILD_EXAMPLES=$BUILD_EXAMPLES .;
     fi

@@ -9,7 +9,12 @@
 
 #include <algorithm>
 #include <limits>
+#include <string>
 #include <vector>
+
+#ifdef CNN_USE_HDF
+#include <H5Cpp.h>
+#endif
 
 #include "tiny_dnn/core/framework/tensor.h"
 #include "tiny_dnn/util/parameter_init.h"
@@ -144,6 +149,31 @@ class Parameter : public std::enable_shared_from_this<Parameter> {
       is >> *data_at(i);
     }
   }
+
+#ifdef CNN_USE_HDF
+  void load(const std::string &file_path, const std::string &parameter_name) {
+    hid_t file_id = H5Fopen(file_path.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+    hid_t parameter_id = H5Dopen1(file_id, parameter_name.c_str());
+
+    hid_t dataspace_id = H5Dget_space(parameter_id);
+    hsize_t vec_size   = H5Sget_simple_extent_npoints(dataspace_id);
+
+    assert(data_.size() == vec_size);
+    vec_t data_vec(vec_size);
+
+#ifdef CNN_USE_DOUBLE
+    H5Dread(parameter_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT,
+            data_vec.data());
+#else
+    H5Dread(parameter_id, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT,
+            data_vec.data());
+#endif
+    data_ = data_.fromVec(data_vec);
+    H5Sclose(dataspace_id);
+    H5Dclose(parameter_id);
+    H5Fclose(file_id);
+  }
+#endif
   /** @} */  // Serialization - Deserialization Utilities
 
  private:

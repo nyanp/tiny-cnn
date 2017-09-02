@@ -8,6 +8,7 @@
 #pragma once
 
 #include <gtest/gtest.h>
+#include <string>
 
 #include "test/testhelper.h"
 #include "tiny_dnn/tiny_dnn.h"
@@ -98,6 +99,50 @@ TEST(parameter, constant_init) {
   }
 }
 
+#ifdef CNN_USE_HDF
+TEST(parameter, hdf_load_individual_parameter) {
+  std::string xor_hdf_path;
+  resolve_path("testdata/xor.h5", xor_hdf_path);
+
+  network<sequential> net;
+  net << fully_connected_layer(2, 4, true) << relu()
+      << fully_connected_layer(4, 1, true) << sigmoid();
+
+  net[0]->parameter_at(0).load(xor_hdf_path, "dense_1/dense_1/kernel:0");
+  net[0]->parameter_at(1).load(xor_hdf_path, "dense_1/dense_1/bias:0");
+  net[2]->parameter_at(0).load(xor_hdf_path, "dense_2/dense_2/kernel:0");
+  net[2]->parameter_at(1).load(xor_hdf_path, "dense_2/dense_2/bias:0");
+
+  ASSERT_LE(net.predict({0, 0})[0], 0.5);
+  ASSERT_LE(net.predict({1, 1})[0], 0.5);
+  ASSERT_GE(net.predict({0, 1})[0], 0.5);
+  ASSERT_GE(net.predict({1, 0})[0], 0.5);
+}
+
+TEST(parameter, hdf_load_individual_layer) {
+  std::string xor_hdf_path;
+  resolve_path("testdata/xor.h5", xor_hdf_path);
+
+  network<sequential> net1;
+  network<sequential> net2;
+  net1 << fully_connected_layer(2, 4, true) << relu()
+       << fully_connected_layer(4, 1, true) << sigmoid();
+
+  net2 << fully_connected_layer(2, 4, true) << relu()
+       << fully_connected_layer(4, 1, true) << sigmoid();
+
+  net1[0]->parameter_at(0).load(xor_hdf_path, "dense_1/dense_1/kernel:0");
+  net1[0]->parameter_at(1).load(xor_hdf_path, "dense_1/dense_1/bias:0");
+  net1[2]->parameter_at(0).load(xor_hdf_path, "dense_2/dense_2/kernel:0");
+  net1[2]->parameter_at(1).load(xor_hdf_path, "dense_2/dense_2/bias:0");
+
+  net2[0]->load(xor_hdf_path, "dense_1");
+  net2[2]->load(xor_hdf_path, "dense_2");
+
+  ASSERT_TRUE(net1.has_same_parameters(net2, 1e-5));
+}
+
+#endif
 // todo (karandesai) : test getters and setters on fc layer
 
 }  // namespace tiny_dnn

@@ -36,6 +36,10 @@
 #include <cereal/types/vector.hpp>
 #endif
 
+#ifdef CNN_USE_HDF
+#include <H5Cpp.h>
+#endif
+
 #include "tiny_dnn/util/aligned_allocator.h"
 #include "tiny_dnn/util/macro.h"
 #include "tiny_dnn/util/nn_error.h"

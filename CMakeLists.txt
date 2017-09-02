@@ -54,6 +54,7 @@ option(USE_NNPACK     "Build tiny-dnn with NNPACK library support" OFF)
 option(USE_OPENCL     "Build tiny-dnn with OpenCL library support" OFF) 
 option(USE_LIBDNN     "Build tiny-dnn with GreenteaLibDNN library support" OFF)
 option(USE_SERIALIZER "Build tiny-dnn with Serialization support"   ON)
+option(USE_HDF        "Build tiny-dnn with HDF Serialization support"      OFF)
 option(USE_DOUBLE     "Build tiny-dnn with double precision computations"  OFF)
 option(USE_IMAGE_API  "Build tiny-dnn with Image API support"       ON)
 option(USE_GEMMLOWP   "Build tiny-dnn with gemmlowp support"       OFF)
@@ -108,6 +109,10 @@ endif()
 
 if(NOT USE_SERIALIZER)
     add_definitions(-DCNN_NO_SERIALIZATION)
+endif()
+
+if(USE_HDF)
+    add_definitions(-DCNN_USE_HDF)
 endif()
 
 if(USE_DOUBLE)
@@ -196,6 +201,15 @@ elseif(USE_LIBDNN AND NOT LIBDNN_FOUND)
     # will require to find LibDNN in your system. Otherwise, the user can
     # set the paths to headers and libs by hand.
     message(FATAL_ERROR "Can't find LibDNN.")
+endif()
+
+find_package(HDF5 QUIET)
+if(HDF5_FOUND AND USE_HDF)
+    message(STATUS "Found HDF C++ API Modules: ${HDF5_INCLUDE_DIRS}")
+    add_definitions(-DCNN_USE_HDF)
+    link_directories( ${HDF5_LIBRARY_DIRS} )
+    include_directories(SYSTEM ${HDF5_INCLUDE_DIRS} )
+    list(APPEND REQUIRED_LIBRARIES ${HDF5_LIBRARIES} hdf5_cpp)
 endif()
 
 ####
