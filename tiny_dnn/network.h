@@ -7,9 +7,6 @@
 */
 #pragma once
 
-#ifndef CNN_NO_SERIALIZATION
-#include <fstream>
-#endif
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
@@ -23,6 +20,11 @@
 #include <utility>
 #include <vector>
 
+#ifndef CNN_NO_SERIALIZATION
+#include <H5Cpp.h>
+#include <fstream>
+#endif
+
 #include "tiny_dnn/lossfunctions/loss_function.h"
 #include "tiny_dnn/nodes.h"
 #include "tiny_dnn/util/util.h"
@@ -35,7 +37,7 @@ enum class content_type {
   weights_and_model  ///< save/load both the weights and the architecture
 };
 
-enum class file_format { binary, json };
+enum class file_format { binary, json, hdf };
 
 struct result {
   result() : num_success(0), num_total(0) {}
@@ -618,6 +620,10 @@ class network {
         cereal::JSONInputArchive ji(ifs);
         from_archive(ji, what);
       } break;
+      case file_format::hdf: {
+        from_hdf(filename);
+        break;
+      }
       default: throw nn_error("invalid serialization format");
     }
 #else
@@ -729,6 +735,45 @@ class network {
         what == content_type::weights_and_model) {
       net_.load_weights(ar);
     }
+  }
+
+  void from_hdf(const std::string &filename,
+                content_type what = content_type::weights) {
+#ifndef CNN_NO_SERIALIZATION
+    if (what == content_type::weights_and_model) {
+      throw nn_error("hdf serialization is only possible for weights");
+    }
+    // this id can be seen as H5::File object
+    hid_t file_id = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+
+    // it will have one H5::Attrbute named 'layer_names'
+    hid_t layer_names_id = H5Aopen(file_id, "layer_names", H5P_DEFAULT);
+
+    // we shall collect layer names as a vector of strings in the same order
+    // they appear in the sequential model. we shall filter that vector and
+    // retain only those layers having H5::DataSet containing parameters.
+    // this can be checked by seeing corresponding H5::Group 's 'weight_names'
+    std::vector<std::string> layer_names =
+      H5Aget_value_as_string_vec(layer_names_id);
+    H5Aclose(layer_names_id);
+
+    // contains names of layers (H5::Group) which have H5::DataSet of weights
+    std::vector<std::string> filtered_layer_names;
+    for (auto &layer_name : layer_names) {
+      hid_t layer_attr_id = H5Aopen_by_name(
+        file_id, layer_name.c_str(), "weight_names", H5P_DEFAULT, H5P_DEFAULT);
+      H5A_info_t a_info;
+      H5Aget_info(layer_attr_id, &a_info);
+      if (a_info.data_size > 0) {
+        filtered_layer_names.push_back(layer_name);
+      }
+      H5Aclose(layer_attr_id);
+    }
+    net_.load_weights(filename, filtered_layer_names);
+    H5Fclose(file_id);
+#else
+    throw nn_error("tiny-dnn was not built with serialization support");
+#endif  // CNN_NO_SERIALIZATION
   }
 
  protected:

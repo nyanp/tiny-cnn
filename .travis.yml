@@ -36,6 +36,7 @@ addons:
     # caffe-importer dependencies
     - libprotobuf-dev
     - protobuf-compiler
+    - libhdf5-dev
 
 branches:
   only:

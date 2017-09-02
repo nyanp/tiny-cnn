@@ -44,6 +44,7 @@ using namespace tiny_dnn::activation;
 
 #ifndef CNN_NO_SERIALIZATION
 #include "test_serialization.h"
+#include "test_serialization_hdf.h"
 #endif  // CNN_NO_SERIALIZATION
 
 #ifdef CNN_USE_GEMMLOWP

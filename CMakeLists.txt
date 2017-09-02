@@ -198,6 +198,14 @@ elseif(USE_LIBDNN AND NOT LIBDNN_FOUND)
     message(FATAL_ERROR "Can't find LibDNN.")
 endif()
 
+find_package(HDF5 QUIET)
+if(HDF5_FOUND AND USE_SERIALIZER)
+    message(STATUS "Found HDF C++ API Modules: ${HDF5_INCLUDE_DIRS}")
+    link_directories( ${HDF5_LIBRARY_DIRS} )
+    include_directories(SYSTEM ${HDF5_INCLUDE_DIRS} )
+    list(APPEND REQUIRED_LIBRARIES ${HDF5_LIBRARIES} hdf5_cpp)
+endif()
+
 ####
 # Setup the compiler options
 

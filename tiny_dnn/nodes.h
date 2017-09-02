@@ -8,6 +8,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 #include <tuple>
 #include <unordered_map>
 #include <utility>
@@ -16,6 +17,8 @@
 #ifndef CNN_NO_SERIALIZATION
 #include <cereal/types/tuple.hpp>
 #include <cereal/types/utility.hpp>
+
+#include <H5Cpp.h>
 #endif
 
 #include "tiny_dnn/layers/layer.h"
@@ -204,6 +207,19 @@ class nodes {
       ia(*n);
     }
   }
+
+#ifndef CNN_NO_SERIALIZATION
+  void load_weights(const std::string &filename,
+                    const std::vector<std::string> &layer_names) {
+    size_t layer_names_idx = 0;
+    for (auto n : nodes_) {
+      if (n->parameters().size() > 0) {
+        n->load(filename, layer_names[layer_names_idx]);
+        layer_names_idx++;
+      }
+    }
+  }
+#endif
 
  protected:
   template <typename T>

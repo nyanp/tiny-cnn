@@ -37,6 +37,10 @@
 #include "tiny_dnn/util/image.h"
 #endif
 
+#ifndef CNN_NO_SERIALIZATION
+#include <H5Cpp.h>
+#endif
+
 namespace tiny_dnn {
 
 /**
@@ -452,6 +456,33 @@ class layer : public node {
     for (auto &parameter : parameters_) {
       parameter->load(is, precision);
     }
+  }
+
+  void load(const std::string &filename, const std::string &layer_name) {
+#ifndef CNN_NO_SERIALIZATION
+    // this id can be seen as H5::File object
+    hid_t file_id = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+
+    // it will have multiple H5::Group objects, each representing a layer
+    hid_t layer_id = H5Gopen1(file_id, layer_name.c_str());
+
+    // each H5::Group shall have one H5::Attribute named 'weight_names'
+    hid_t parameter_names_id = H5Aopen(layer_id, "weight_names", H5P_DEFAULT);
+
+    std::vector<std::string> parameter_names =
+      H5Aget_value_as_string_vec(parameter_names_id);
+    H5Aclose(parameter_names_id);
+
+    // parameter_names vector will usually have 1 or 2 members named
+    // <layer_name>/kernel:0 and <layer_name>/bias:0
+    for (size_t i = 0; i < parameter_names.size(); i++) {
+      parameters_[i]->load(filename, layer_name + "/" + parameter_names[i]);
+    }
+    H5Gclose(layer_id);
+    H5Fclose(file_id);
+#else
+    throw nn_error("tiny-dnn was not built with serialization support");
+#endif  // CNN_NO_SERIALIZATION
   }
 
 /////////////////////////////////////////////////////////////////////////
