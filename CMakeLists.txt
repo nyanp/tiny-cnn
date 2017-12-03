@@ -80,6 +80,9 @@ add_library(${project_library_target_name} INTERFACE)
 # Using cmake scripts and modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
 
+# clang-format and linter tests
+include(cmake/clang-cxx-dev-tools.cmake)
+
 # Tiny-dnn provides a couple of multithreading solutions.
 # The user can specify to use Intel Threading Building Blocks (TBB)
 # or Open Multi-Processing (OpenMP) as a backend for multi threading

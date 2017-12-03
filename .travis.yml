@@ -1,113 +1,27 @@
-sudo: required
+sudo: true
 dist: trusty
-osx_image: xcode8
-
-language: cpp
-
-os:
-  - linux
-  - osx
-
-compiler:
-  - gcc
-  - clang
-
-cache:
-  pip: true
-  directories:
-    - $HOME/.pip-cache/
-
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    - llvm-toolchain-precise-3.6
-    packages:
-    - gcc-4.9
-    - g++-4.9
-    - clang-3.6
-    - cmake
-    - git
-    # Optional dependencies
-    - libtbb-dev
-    # coveralls dependencies
-    - gem
-    - lcov
-    # caffe-importer dependencies
-    - libprotobuf-dev
-    - protobuf-compiler
-
-branches:
-  only:
-    - master
-    - feat/xtensor_integration
-    - feat/decouple_activations
 
 env:
-  global:
-    - USE_TBB=ON
-    - BUILD_TESTS=ON
-    - BUILD_EXAMPLES=ON
-    - COVERALLS=ON
+  - DOCKER_IMG=tinydnn/tinydnn
 
-  matrix:
-    - USE_SSE=OFF USE_AVX=OFF USE_DOUBLE=OFF
-    - USE_SSE=ON  USE_AVX=ON USE_DOUBLE=OFF
-    - USE_SSE=ON  USE_AVX=ON USE_DOUBLE=ON
 
-matrix:
-  exclude: # On OSX g++ is a symlink to clang++ by default
-    - os: osx
-      compiler: gcc
+jobs:
+  include:
+    - stage: lints
+      env:
+        - RUN_LINTS=ON
+      script: ./travis_script.sh
+    - stage: test
+      os:
+        - linux
+        - osx
+      env:
+        - BUILD_TESTS=ON
+      script: ./travis_script.sh
+    - stage: examples
+      env:
+        - BUILD_EXAMPLES=ON
+      script: ./travis_script.sh
 
-before_install:
-  - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$CXX" == "g++" ]; then
-      export CC="gcc-4.9";
-      export CXX="g++-4.9";
-    fi
-  - gcc --version
-  - g++ --version
-
-install:
-  - bash -x .travis/install.sh
-  - gem install coveralls-lcov
-  - pip install --user cpplint
-
-before_script:
-  - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$CXX" == "g++-4.9" ]; then
-      lcov --directory . --zerocounters;
-      cmake -DUSE_TBB=$USE_TBB
-            -DUSE_SSE=$USE_SSE
-            -DUSE_AVX=$USE_AVX
-            -DUSE_DOUBLE=$USE_DOUBLE
-            -DBUILD_TESTS=$BUILD_TESTS
-            -DCOVERALLS=$COVERALLS
-            -DUSE_ASAN=ON
-            -DBUILD_EXAMPLES=$BUILD_EXAMPLES .;
-    fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$CXX" == "clang++" ]; then
-      cmake -DUSE_SSE=$USE_SSE
-            -DUSE_AVX=$USE_AVX
-            -DBUILD_TESTS=$BUILD_TESTS
-            -DBUILD_EXAMPLES=$BUILD_EXAMPLES .;
-    fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-      cmake -DUSE_TBB=$USE_TBB
-            -DUSE_AVX=OFF
-            -DBUILD_TESTS=$BUILD_TESTS .;
-    fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-      make test_lints;
-    fi
-
-script:
-  - make -j2
-  - test/tiny_dnn_test
-
-after_success:
-  - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$CXX" == "g++-4.9" ]; then
-      lcov --directory . --capture --output-file coverage.info;
-      lcov --remove coverage.info 'test/*' 'third_party/*' 'cereal/*' '/usr/*' 'tiny_dnn/io/caffe/caffe.pb.*' --output-file coverage.info;
-      lcov --list coverage.info;
-      coveralls-lcov --source-encoding=ISO-8859-1 coverage.info;
-    fi
+cache:
+  - docker
