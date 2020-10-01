@@ -17,6 +17,7 @@ local.properties
 .loadpath
 waf-*
 .waf-*
+.vscode
 
 # External tool builders
 .externalToolBuilders/
